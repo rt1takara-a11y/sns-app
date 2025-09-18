@@ -1,62 +1,101 @@
 package com.example.snsapp;
 
-import java.util.List;
+// ...既存のimport文...
+import org.springframework.security.core.Authentication; // Authenticationをインポート
+import java.util.Optional; // Optionalをインポート
 
-import org.springframework.web.bind.annotation.DeleteMapping;
+// 追加したimport（コンパイルに必要）
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
-// @RestController: このクラスがWebリクエストを受け付けるコントローラーであることを示します。
-// 各メソッドの返り値は、自動的にJSON形式のデータに変換されてクライアントに返されます。
 @RestController
-// @RequestMapping: このコントローラー内の全てのAPIのURLの接頭辞(プレフィックス)を指定します。
-// ここでは、全てのURLが「/api/posts」から始まることになります。
-@RequestMapping("/api/posts")
+@RequestMapping("/api/posts") // PostControllerは/api/postsを担当
 public class PostController {
 
-    // final: この変数は一度初期化されたら変更できないことを示します。
     private final PostRepository postRepository;
+    private final UserRepository userRepository; // UserRepositoryを追加
 
-    // コンストラクタ: PostControllerが作られる時に実行されるメソッドです。
-    // Springが自動的にPostRepositoryのインスタンスをここに「注入」(DI)してくれます。
-    // これにより、コントローラー内でリポジトリの機能が使えるようになります。
-    public PostController(PostRepository postRepository) {
+    // コンストラクタを修正（既存のまま有効）
+    public PostController(PostRepository postRepository, UserRepository userRepository) {
         this.postRepository = postRepository;
+        this.userRepository = userRepository;
     }
 
-    // --- APIエンドポイントの定義 ---
-
-    // @GetMapping: HTTPのGETリクエストをこのメソッドに割り当てます。
-    // URLはベースの「/api/posts」になります。
-    // [GET] /api/posts : 全ての投稿を取得する
+    // 変更: Postエンティティを直接返さず、表示用DTOに変換して返す
     @GetMapping
-    public List<Post> getAllPosts() {
-        // リポジトリが持つfindAll()メソッドを呼び出して、全投稿をデータベースから取得します。
-        return postRepository.findAll();
+    public List<PostResponse> getAllPosts() {
+        return postRepository.findAll().stream()
+            .map(p -> new PostResponse(
+                p.getId(),
+                // フィールド名は実装に合わせて調整してください（例: getContent()）
+                // nullチェックを入れて安全に取得
+                p.getContent(),
+                p.getUser() != null ? p.getUser().getUsername() : null,
+                p.getCreatedAt() != null ? p.getCreatedAt().toString() : null
+            ))
+            .collect(Collectors.toList());
     }
 
-    // @PostMapping: HTTPのPOSTリクエストをこのメソッドに割り当てます。
-    // URLはベースの「/api/posts」になります。
-    // [POST] /api/posts : 新しい投稿を作成する
+    // ▼▼▼ createPostメソッドを修正 ▼▼▼
     @PostMapping
-    public Post createPost(@RequestBody Post newPost) {
-        // @RequestBody: リクエストの本文(Body)に含まれるJSONデータを、
-        // 自動的にPostオブジェクトに変換してくれます。
-        // リポジトリのsave()メソッドで、受け取った投稿をデータベースに保存します。
-        return postRepository.save(newPost);
+    public ResponseEntity<?> createPost(@RequestBody Post newPost, Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).body("ログインしていません。");
+        }
+        
+        // 認証情報からユーザー名を取得
+        String username = authentication.getName();
+        // ユーザー名でデータベースからUserエンティティを検索
+        Optional<User> userOptional = userRepository.findByUsername(username);
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(404).body("ユーザーが見つかりません。");
+        }
+
+        User user = userOptional.get();
+        newPost.setUser(user); // 投稿にユーザー情報をセット
+
+        Post saved = postRepository.save(newPost);
+
+        PostResponse response = new PostResponse(
+            saved.getId(),
+            saved.getContent(),
+            saved.getUser() != null ? saved.getUser().getUsername() : null,
+            saved.getCreatedAt() != null ? saved.getCreatedAt().toString() : null
+        );
+
+        return ResponseEntity.ok(response);
     }
 
-    // @DeleteMapping: HTTPのDELETEリクエストをこのメソッドに割り当てます。
-    // "/{id}": URLの一部を可変なパラメータとして受け取ることを示します。
-    // [DELETE] /api/posts/1 : IDが1の投稿を削除する
+    // 追加: 投稿削除エンドポイント
     @DeleteMapping("/{id}")
-    public void deletePost(@PathVariable Long id) {
-        // @PathVariable: URLに含まれるパラメータ({id})をメソッドの引数として受け取ります。
-        // リポジトリのdeleteById()メソッドで、指定されたIDの投稿を削除します。
-        postRepository.deleteById(id);
+    public ResponseEntity<?> deletePost(@PathVariable Long id, Authentication authentication) {
+        Optional<Post> postOpt = postRepository.findById(id);
+        if (postOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("投稿が見つかりません。");
+        }
+
+        Post post = postOpt.get();
+
+        // TODO: 将来的には認証済みかつ投稿者のみ削除可能にする。
+        // 例:
+        // if (authentication == null) return ResponseEntity.status(401).body("ログインしてください。");
+        // String username = authentication.getName();
+        // if (post.getUser() != null && !username.equals(post.getUser().getUsername()))
+        //     return ResponseEntity.status(403).body("削除権限がありません。");
+
+        postRepository.delete(post);
+        return ResponseEntity.ok().body("deleted");
     }
+
+    // 表示用DTO（Java 21 の record を利用）
+    public record PostResponse(Long id, String content, String username, String createdAt) {}
 }

@@ -10,7 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
+import jakarta.persistence.ManyToOne;
 // @Entity: このクラスがデータベースのテーブルに対応する「エンティティ」であることを示します。
 // Spring Boot(JPA)がこのクラスを見つけて、データベースの設計図として認識します。
 @Entity
@@ -38,6 +38,17 @@ public class Post {
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @ManyToOne // 多対一の関係を示すアノテーション
+    private User user; // 投稿者情報
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     // --- Getters and Setters ---
     // privateなフィールドに外部からアクセスするための決まり文句(お作法)です。

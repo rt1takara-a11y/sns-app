@@ -1,66 +1,388 @@
+/* ベージュ × インディゴ ポートフォリオ風 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;600&display=swap');
+
+:root{
+  --beige-1: #f6efe3; /* 背景ベース */
+  --beige-2: #efe6d8; /* カードの微妙な差 */
+  --indigo: #2f3a8f;  /* メインアクセント */
+  --indigo-2:#4555c4;  /* ボタングラデ */
+  --muted: #7b6f64;
+  --text: #16202b;
+  --card-bg: #ffffff;
+  --border: rgba(20,24,30,0.06);
+  --glass: rgba(255,255,255,0.6);
+}
+
+/* 全体フォント & 背景 */
+*{box-sizing:border-box}
+html,body,#root{height:100%}
 body {
-  font-family: sans-serif;
-  background-color: #f0f2f5;
   margin: 0;
-  padding: 20px;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  padding: 0;
+  background:
+    radial-gradient(800px 300px at 10% 10%, rgba(63,69,81,0.02), transparent 10%),
+    radial-gradient(600px 240px at 90% 90%, rgba(63,69,81,0.02), transparent 8%),
+    linear-gradient(180deg, var(--beige-1) 0%, var(--beige-2) 100%);
 }
 
+/* ルート App コンテナ */
 .App {
-  max-width: 600px;
-  margin: 0 auto;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 1000px;
+  margin: 36px auto;
+  padding: 30px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.9));
+  box-shadow: 0 20px 50px rgba(18,22,30,0.06);
+  border: 1px solid var(--border);
 }
 
-form {
+/* トップナビ */
+.topbar {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:20px;
+  color:var(--muted);
+  font-weight:600;
+  font-size:14px;
+}
+.topbar a {
+  color:var(--muted);
+  text-decoration:none;
+  padding:8px 12px;
+  border-radius:10px;
+  transition: background .12s ease, color .12s ease, transform .08s ease;
+}
+.topbar a:hover {
+  background: rgba(47,58,143,0.06);
+  color: var(--indigo);
+  transform: translateY(-2px);
+}
+.logout-button {
+  margin-left:8px;
+  background:transparent;
+  border:1px solid rgba(47,58,143,0.08);
+  padding:6px 12px;
+  border-radius:10px;
+  cursor:pointer;
+  color:var(--indigo);
+  font-weight:700;
+}
+.logout-button:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(47,58,143,0.06); }
+
+/* ページ共通のコンテナ（HomePage / auth 用に使う） */
+.home-page {
+  min-height: calc(100vh - 140px);
   display: flex;
-  margin-bottom: 20px;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 34px 20px;
+}
+.home-page .container { width:100%; max-width:860px; }
+
+/* 見出し（セリフでポートフォリオ感） */
+.home-page h1,
+.auth-card h2 {
+  margin: 0 0 16px 0;
+  font-family: "Playfair Display", serif;
+  font-size: 34px;
+  font-weight: 600;
+  color: var(--indigo);
+  letter-spacing: 0;
+  line-height: 1.05;
+  position: relative;
+}
+/* 装飾バー */
+.home-page h1::after {
+  content: "";
+  display: block;
+  width: 56px;
+  height: 6px;
+  background: linear-gradient(90deg, var(--indigo), var(--indigo-2));
+  border-radius: 4px;
+  margin-top:10px;
+  opacity:0.96;
 }
 
-input[type="text"] {
-  flex-grow: 1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 16px;
+/* 投稿作成エリア（カード） */
+.compose {
+  display:flex;
+  gap:14px;
+  align-items:center;
+  background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.98));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 10px 30px rgba(18,22,30,0.04);
+  margin-bottom: 18px;
 }
-
-button {
-  padding: 10px 15px;
+.compose input[type="text"]{
+  flex:1;
   border: none;
-  background-color: #1877f2;
-  color: white;
-  border-radius: 6px;
+  outline: none;
+  font-size:15px;
+  padding:12px 14px;
+  background: transparent;
+  color: var(--text);
+  border-radius:10px;
+  box-shadow: inset 0 1px 0 rgba(16,20,26,0.02);
+}
+
+/* ボタン（インディゴで強めに） */
+.compose button,
+.auth-card button {
+  background: linear-gradient(180deg, var(--indigo) 0%, var(--indigo-2) 100%);
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 12px;
   cursor: pointer;
-  margin-left: 10px;
+  font-weight:700;
+  box-shadow: 0 10px 24px rgba(47,58,143,0.12);
+  transition: transform .12s ease, opacity .08s ease, box-shadow .12s ease;
 }
+.compose button:hover,
+.auth-card button:hover{ transform: translateY(-3px); }
 
-button:hover {
-  background-color: #166fe5;
-}
-
+/* 投稿一覧：ベージュ寄りのカードで品よく */
 .post-list {
   list-style: none;
   padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 14px;
 }
-
 .post-item {
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start; /* 変更: 上寄せに */
+  background: linear-gradient(180deg, var(--card-bg) 0%, #fbfdff 100%);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(9,14,20,0.04);
+  color: #0f1720;
+}
+.post-item span{
+  display:block;
+  font-size:15px;
+  line-height:1.45;
+  color:var(--text);
+  word-break:break-word;
+  max-width:80%;
 }
 
+/* 投稿の左に小さなインディゴタグ（装飾） */
+.post-item::before{
+  content: "";
+  display:inline-block;
+  width:6px;
+  height:40px;
+  background: linear-gradient(180deg, var(--indigo), var(--indigo-2));
+  border-radius:8px;
+  margin-right:12px;
+  margin-left: -12px;
+  opacity:0.96;
+}
+
+/* 削除ボタン（控えめに） */
 .delete-button {
-  background-color: #e4e6eb;
-  color: #606770;
+  background: transparent;
+  border: 1px solid rgba(185,28,28,0.12);
+  color: #b91c1c;
+  padding:6px 10px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:700;
+  transition: background .08s ease, transform .08s ease;
+}
+.delete-button:hover {
+  background: rgba(185,28,28,0.06);
+  transform: translateY(-1px);
 }
 
-.delete-button:hover {
-  background-color: #d8dade;
+/* 認証フォームカード（上品に） */
+.auth-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.99));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 16px 38px rgba(18,22,30,0.04);
+  position: relative;
+  overflow: hidden;
+}
+/* 左上に淡いインディゴの斜めストライプ（控えめなアクセント） */
+.auth-card::before{
+  content: "";
+  position:absolute;
+  left:-40px;
+  top:-40px;
+  width:140px;
+  height:140px;
+  background: linear-gradient(135deg, rgba(47,58,143,0.06) 0%, rgba(47,58,143,0.02) 60%);
+  transform: rotate(12deg);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 0;
+}
+.auth-card *{ position: relative; z-index: 1; }
+
+.auth-card form {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-top:6px;
+}
+.auth-card input {
+  height:48px;
+  padding:12px 14px;
+  border-radius:10px;
+  border:1px solid rgba(16,20,26,0.04);
+  outline:none;
+  background: rgba(250,249,247,0.6);
+  font-size:15px;
+  color:var(--text);
+}
+.auth-card input::placeholder{
+  color: var(--muted);
+}
+
+/* 投稿コンテンツ内のスタイル調整 */
+.post-left { display:flex; flex-direction:column; gap:8px; align-items:flex-start; width:100%; }
+.post-content { font-size:15px; color:var(--text); display:block; }
+
+/* 投稿メタ（投稿者名・日時） */
+.post-meta {
+  display:flex;
+  gap:8px;
+  align-items:center;
+  color:var(--muted);
+  font-size:13px;
+  margin-top:2px;
+}
+.post-author {
+  font-weight:700;
+  color: var(--indigo);
+  font-size:13px;
+}
+.post-date {
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* avatar upload */
+.avatar-upload {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:10px;
+  cursor:pointer;
+}
+.avatar-upload input[type="file"]{
+  display:none;
+}
+.avatar-preview {
+  width:64px;
+  height:64px;
+  border-radius:12px;
+  overflow:hidden;
+  background:linear-gradient(180deg,#fff,#fbfdff);
+  border:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 6px 18px rgba(18,22,30,0.04);
+}
+.avatar-preview img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.avatar-placeholder {
+  color:var(--muted);
+  font-size:12px;
+  text-align:center;
+  padding:6px;
+}
+.avatar-help { font-size:12px; color:var(--muted); }
+
+/* date input */
+input[type="date"]{
+  height:44px;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid rgba(16,20,26,0.04);
+  outline:none;
+  background: rgba(250,249,247,0.6);
+  font-size:15px;
+  color:var(--text);
+}
+
+/* textarea (bio) */
+textarea {
+  width:100%;
+  padding:12px 14px;
+  border-radius:10px;
+  border:1px solid rgba(16,20,26,0.04);
+  outline:none;
+  background: rgba(250,249,247,0.6);
+  font-size:15px;
+  color:var(--text);
+  resize:vertical;
+}
+
+/* 投稿のメイン領域（アバター + コンテンツ） */
+.post-main {
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  width:100%;
+  flex:1;
+}
+
+/* avatar */
+.post-avatar {
+  width:48px;
+  height:48px;
+  border-radius:10px;
+  object-fit:cover;
+  flex-shrink:0;
+  background: linear-gradient(180deg,#fff,#fbfdff);
+  border:1px solid var(--border);
+  display:block;
+  box-shadow: 0 6px 16px rgba(18,22,30,0.04);
+  color:var(--muted);
+  font-weight:700;
+  font-size:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* プレースホルダ（イニシャル） */
+.post-avatar.placeholder {
+  background: linear-gradient(180deg, rgba(47,58,143,0.06), rgba(47,58,143,0.02));
+  color: var(--indigo);
+}
+
+/* レスポンシブ */
+@media (max-width: 720px) {
+  .App { margin: 18px; padding: 18px; border-radius:12px; }
+  .home-page { padding: 18px 12px; }
+  .home-page h1 { font-size: 24px; }
+  .compose { padding:12px; border-radius:12px; flex-direction:column; align-items:stretch; }
+  .compose input[type="text"]{ padding:12px; }
+  .auth-card { padding:16px; }
+  .post-item::before{ display:none; }
+}
+
+/* ユーティリティ */
+button:disabled{
+  opacity:0.6;
+  cursor:not-allowed;
 }
