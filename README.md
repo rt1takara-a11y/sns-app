@@ -56,5 +56,5 @@
 
 1. リポジトリをクローン
    `bash
-   git clone [あなたのリポジトリURL]
+   git clone [https://github.com/rt1takara-a11y/sns-app]
    cd sns-app
