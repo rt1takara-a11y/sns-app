@@ -11,48 +11,43 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.ManyToOne;
-// @Entity: このクラスがデータベースのテーブルに対応する「エンティティ」であることを示します。
-// Spring Boot(JPA)がこのクラスを見つけて、データベースの設計図として認識します。
+
 @Entity
-// @Table: このエンティティが対応するテーブル名を「posts」に指定します。
-// これがないとクラス名と同じ「post」テーブルが作られます。
 @Table(name = "posts")
 public class Post {
 
-    // @Id: このフィールドがテーブルの「主キー」(Primary Key)であることを示します。
-    // 主キーは、各データを一意に識別するための番号です。
     @Id
-    // @GeneratedValue: 主キーの値をデータベースが自動で生成する方法を指定します。
-    // GenerationType.IDENTITYは、新しいデータが追加されるたびに番号が1ずつ増える設定です。
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // @Column: テーブルのカラム(列)に関する設定を行います。
-    // nullable = false は、このカラムが空であってはならない(必須項目)ことを意味します。
-    // columnDefinition = "TEXT" は、このカラムのデータ型をTEXT型(長い文章を保存できる)に指定します。
+    // --- ▼▼▼ ここからが追加部分 ▼▼▼ ---
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String projectSummary;
+
+    @Column(columnDefinition = "TEXT")
+    private String problemStatement;
+
+    // contentフィールドはそのまま残し、「実施したこと・解決策」の役割を担います
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    // @CreationTimestamp: このエンティティが新しく作成(保存)される時に、
-    // 現在の日時を自動的にこのフィールドに設定してくれます。
+    @Column(columnDefinition = "TEXT")
+    private String lessonsLearned;
+
+    // --- ▲▲▲ ここまで ▲▲▲ ---
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @ManyToOne // 多対一の関係を示すアノテーション
-    private User user; // 投稿者情報
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
+    @ManyToOne
+    private User user;
 
     // --- Getters and Setters ---
-    // privateなフィールドに外部からアクセスするための決まり文句(お作法)です。
-    // Spring Bootが内部でこれらのメソッドを使って値の読み書きを行います。
 
     public Long getId() {
         return id;
@@ -62,6 +57,43 @@ public class Post {
         this.id = id;
     }
 
+    // --- ▼▼▼ 新しいフィールド用のGetter/Setter ▼▼▼ ---
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getProjectSummary() {
+        return projectSummary;
+    }
+
+    public void setProjectSummary(String projectSummary) {
+        this.projectSummary = projectSummary;
+    }
+
+    public String getProblemStatement() {
+        return problemStatement;
+    }
+
+    public void setProblemStatement(String problemStatement) {
+        this.problemStatement = problemStatement;
+    }
+
+    public String getLessonsLearned() {
+        return lessonsLearned;
+    }
+
+    public void setLessonsLearned(String lessonsLearned) {
+        this.lessonsLearned = lessonsLearned;
+    }
+    
+    // --- ▲▲▲ ここまで ▲▲▲ ---
+    
+    // contentのGetter/Setter (元々あったもの)
     public String getContent() {
         return content;
     }
@@ -69,12 +101,20 @@ public class Post {
     public void setContent(String content) {
         this.content = content;
     }
-
+    
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

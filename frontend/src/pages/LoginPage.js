@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { api } from '../api';
 import '../App.css';
 
 function LoginPage() {
@@ -12,14 +13,11 @@ function LoginPage() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:8080/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
+            const response = await api.login({ username, password });
 
             if (response.ok) {
                 const data = await response.json();
+                // JWTトークンを保存
                 login(data.token);
                 navigate('/');
             } else {
